@@ -1,7 +1,10 @@
 from io import TextIOWrapper
 import sys
+import processor
 
 def parse_asm_file(file_descriptor: TextIOWrapper):
+    pcsr = processor.Processor(file_descriptor)
+    pcsr.first_pass()
     pass
 
 def main():
