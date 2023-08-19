@@ -1,5 +1,12 @@
 from enum import Enum
 
+class LC3_Directive(Enum):
+    ORIGIN = 'ORIG'
+    END = 'END'
+    BLKW = 'BLKW'
+    FILL = 'FILL'
+    STRINGZ = 'STRINGZ'
+
 class LC3_Operation(Enum):
     OP_BR = 0
     OP_ADD = 1
