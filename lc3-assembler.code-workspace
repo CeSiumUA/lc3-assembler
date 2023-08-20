@@ -4,5 +4,21 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Python: assembler File",
+				"type": "python",
+				"request": "launch",
+				"program": "src/assembler.py",
+				"console": "integratedTerminal",
+				"justMyCode": true,
+				"args": [
+					"2048.asm"
+				]
+			}
+		]
+	}
 }
