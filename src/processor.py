@@ -11,9 +11,30 @@ class Processor:
     def parse_line(line: str):
         pass
 
+    def remove_comments(self, line):
+        # Regular expression pattern to match semicolons inside double quotes
+        pattern = r'"[^"]*"'
+
+        # Replace semicolons inside double quotes with a placeholder
+        placeholders = []
+        def replace(match):
+            placeholders.append(match.group())
+            return f'__PLACEHOLDER{len(placeholders) - 1}__'
+        line = re.sub(pattern, replace, line)
+
+        # Remove comments (including those outside strings)
+        line = re.sub(r';.*', '', line)
+
+        # Put the placeholders back
+        def restore(match):
+            index = int(match.group(1))
+            return placeholders[index]
+        line = re.sub(r'__PLACEHOLDER(\d+)__', restore, line)
+
+        return line.strip()
+
     def sanitize_line(self, line: str):
-        comment_re_rule = r';(.*)'
-        line = re.sub(comment_re_rule, '', line)
+        line = self.remove_comments(line)
         if line == '':
             return None
         return line
@@ -48,7 +69,7 @@ class Processor:
             if self.__is_opcode(tokens):
                 pass
             elif self.__is_directive(tokens):
-                linenum += self.__first_process_directive(tokens, linenum)
+                linenum += self.__first_process_directive(tokens, linenum, ln)
                 increment_lc = False
             elif self.__is_trap_code(tokens):
                 pass
@@ -67,11 +88,16 @@ class Processor:
             self.pending_label = tokens[0]
         self.location_counter[tokens[0]] = linenum
     
-    def __first_process_directive(self, tokens, linenum) -> int:
-        if tokens[0] == instructions.LC3_Directive.BLKW:
+    def __first_process_directive(self, tokens, linenum: int, ln: str) -> int:
+        if tokens[0] == instructions.LC3_Directive.BLKW.value:
             return self.__get_int(tokens[1])
-        if tokens[0] == instructions.LC3_Directive.STRINGZ:
-            return len(tokens[1]) + 1
+        elif tokens[0] == instructions.LC3_Directive.STRINGZ.value:
+            delimiter = instructions.LC3_Directive.STRINGZ.value
+            idx = ln.find(delimiter)
+            str_seg = ln[idx:].replace(delimiter, '', 1).strip().strip('"')
+            return len(str_seg) + 1
+        elif tokens[0] == instructions.LC3_Directive.FILL.value:
+            return 1
         return 0
 
     def __get_int(self, token: str):
@@ -79,6 +105,8 @@ class Processor:
             return int(token[1:], 16)
         elif token[0] == '#':
             return int(token[1:])
+        elif token[0] == 'b':
+            return int(token[1:], 2)
         else:
             raise BaseException('Invalid number format:', token)
 
@@ -86,8 +114,10 @@ class Processor:
         directives = list(map(lambda c: c.value, instructions.LC3_Directive))
         return tokens[0] in directives
     
-    def __is_opcode(self, tokens):
-        opcodes = list(map(lambda c: Processor.op_to_str(c), instructions.LC3_Operation))
+    def __is_opcode(self, tokens: list[str]):
+        if tokens[0].startswith('BR'):
+            return True
+        opcodes = list(map(lambda c: c[0].replace('OP_', ''), instructions.LC3_Operation.__members__.items()))
         return tokens[0] in opcodes
 
     def __is_trap_code(self, tokens):
