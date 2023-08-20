@@ -13,6 +13,7 @@ class LC3_Operation(Enum):
     OP_LD = 2
     OP_ST = 3
     OP_JSR = 4
+    OP_JSRR = 4
     OP_AND = 5
     OP_LDR = 6
     OP_STR = 7
@@ -21,6 +22,7 @@ class LC3_Operation(Enum):
     OP_LDI = 10
     OP_STI = 11
     OP_JMP = 12
+    OP_RET = 12
     OP_RES = 13
     OP_LEA = 14
     OP_TRAP = 15
